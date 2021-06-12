@@ -2,6 +2,10 @@ import math
 import robot_config as config
 import numpy as np
 
+'''
+checks if the given point is within the robot's work envelope
+limits are defined in the robot_config file
+'''
 
 def work_envelope_check(target_point):
     center = config.position_offset
@@ -24,8 +28,6 @@ def work_envelope_check(target_point):
             is_valid = True
         else:
             is_valid = False
-
-        # print(center[2], radius, check_valid, is_valid)
         
         return is_valid
     except:

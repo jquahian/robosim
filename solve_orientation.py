@@ -5,6 +5,12 @@ import fk
 import rotation_matrices as rot
 import robot_config as config
 
+'''
+solves the joint angles in the wrist to get to input orientation
+compiles the position angles for j1 - j3 with the orientation angles of j4 - j5
+TODO: handle j6 rotation -- what are our options and what's the input?
+'''
+
 
 def solve_orientation(orientation_rot, target_point):
 	x_theta = orientation_rot[0]
@@ -58,6 +64,9 @@ def solve_orientation(orientation_rot, target_point):
 		co_linear_y = round(check_target[1]/target_point[1], 2)
 		co_linear_z = round(check_target[1]/target_point[1], 2)
 
+		# can't guarantee that there will be a solution that gets us exactly 1.0
+		# 0.98 is more than enough for this
+
 		if co_linear_x >= 0.98 and co_linear_y >= 0.98 and co_linear_z >= 0.98:
 			potential_j4_angles.append(i)
 	
@@ -79,6 +88,7 @@ def solve_orientation(orientation_rot, target_point):
 
 	# need to consider the two solves that can get us to the same position
 	j4_angle_option_1 = potential_j4_angles[j4_angle_index]
+
 	# Check the opposite rotation solution
 	j4_angle_option_2 = j4_angle_option_2 = j4_angle_option_1 - 360
 	
@@ -130,7 +140,6 @@ def solve_orientation(orientation_rot, target_point):
 	
 	print(total_angles)
 	return position_angles, total_angles
-
 
 # tests
 # target_point = np.array([338.168119, -0.0733414471,  240.000000])

@@ -21,9 +21,11 @@ def parse_waypoints(waypoints):
 
 	return orientations, targets
 
-# interpolate between the waypoints
-# create a set of equally spaced, descrete points from interpolation
-# pass an array of any size
+'''
+interpolate between the waypoints
+create a set of equally spaced, descrete points from interpolation
+pass an array of any size
+'''
 
 def create_vector(waypoints, interp_orientation):
 	linear_positions = []

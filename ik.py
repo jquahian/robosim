@@ -2,17 +2,16 @@ import math
 import robot_config as config
 import numpy as np
 
-# fixed joint lengths
-# solve for the position/orientation of the spherical wrist separately
-# where the tcp is the middle of the target and the length of the wrist is the radius aruond the point
-# first, calculate the position of j3 around a 'sphere' to the target, then set the orientation of the wrist
+'''
+given point x/y/z, generates angles for j1, j2, j3 for arm positioning
+'''
+
 j1_j2_length = np.add(config.base_j1, config.j1_j2)
 j1_j2_length = j1_j2_length[-1]
-
 j2_j3_length = config.j2_j3[-1]
 j3_j4_length = config.j3_j4[-1]
 j4_j5_length = config.j4_j5[-1]
-j5_j6_length = config.j5_j6[-1]
+# j5_j6_length = config.j5_j6[-1]
 
 j3_j5_length = j3_j4_length + j4_j5_length
 

@@ -4,6 +4,8 @@ import rotation_matrices as rot
 import robot_config as config
 
 '''
+given angles for j1 - j5, determines where the arm is in space given as x/y/z
+
 1. treat each joint as a distinct vector
 2. apply rotations individually
 3. add all vectors

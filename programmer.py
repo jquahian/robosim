@@ -6,6 +6,11 @@ import robot_config as config
 import linear_interp as lin
 import time
 
+'''
+1. unifies path planning to generate raw joint angles
+2. checks the validity of the requested position and the resulting angles
+'''
+
 def safety_checks(targets):
     orientation_rot = targets['orientation']
     target_point = targets['point']
@@ -89,6 +94,7 @@ def program_path(targets, move_type):
     print(f'solve completed in: {time_elapsed}s')
 
 # test
+# incoming points are in a dict with 'orientation' and 'point' as keys and xyz array as value pairs
 point_a = {
         "orientation": np.array([0., 0., 0.]),
         "point": np.array([350., 75., 240.]),
