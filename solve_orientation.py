@@ -11,7 +11,6 @@ compiles the position angles for j1 - j3 with the orientation angles of j4 - j5
 TODO: handle j6 rotation -- what are our options and what's the input?
 '''
 
-
 def solve_orientation(orientation_rot, target_point):
 	x_theta = orientation_rot[0]
 	y_theta = orientation_rot[1]
@@ -113,9 +112,14 @@ def solve_orientation(orientation_rot, target_point):
 	# otherwise the solution at like, 180.1, 179, 178 etc will have a crazy stupid rotation
 	if abs(j4_angle - 180) <= 2:
 		j4_angle = 0
+
+	# TEMPORARY SOLVE FOR J6 ROTATION!
+	j6_angle = 0.0
 	
-	total_angles_a = [position_angles[0], position_angles[1], position_angles[2], j4_angle, j5_angle]
-	total_angles_b = [position_angles[0], position_angles[1], position_angles[2], j4_angle, -j5_angle]
+	# compile our angles for each joint into an array.
+	# we determine either the positive or the negative solution for j5 here
+	total_angles_a = [position_angles[0], position_angles[1], position_angles[2], j4_angle, j5_angle, j6_angle]
+	total_angles_b = [position_angles[0], position_angles[1], position_angles[2], j4_angle, -j5_angle, j6_angle]
 	total_angle_options = [total_angles_a, total_angles_b]
 
 	# depedning on which j4_angle we choose, we pair with the correct j5_angle (positive or negative)

@@ -5,6 +5,7 @@ import fk
 import robot_config as config
 import linear_interp as lin
 import time
+import generate_file
 
 '''
 1. unifies path planning to generate raw joint angles
@@ -72,6 +73,7 @@ def safety_checks(targets):
     
 
 def program_path(targets, move_type):
+    angle_list = []
     start_time = time.time()
         
     for target in targets:
@@ -87,10 +89,12 @@ def program_path(targets, move_type):
         points = targets
 
     for i in range(len(points)):
-        so.solve_orientation(points[i]['orientation'], points[i]['point'])
+        _, solved_angles = so.solve_orientation(points[i]['orientation'], points[i]['point'])
+        angle_list.append(solved_angles)
     
     time_elapsed = round((time.time() - start_time), 3)
     
+    generate_file.write_out(angle_list)
     print(f'solve completed in: {time_elapsed}s')
 
 # test
