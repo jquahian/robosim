@@ -101,7 +101,10 @@ def zero_arm():
 
 def return_num_turns(axis_gear_ratio, input_degrees):
 	# calculates the number of motor turns to get to degrees based on gear ratio
-	turns = (input_degrees * axis_gear_ratio)/360
+	turns = input_degrees / (360 / axis_gear_ratio)
+	
+	print(turns)
+
 	return turns
 
 # returns the current angle of requested joint

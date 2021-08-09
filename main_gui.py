@@ -51,9 +51,9 @@ while True:
 		controller.set_speed(10.0)
 		controller.set_accel(1.5)
 		controller.set_decel(1.5)
-		controller.move_indv_axis(0, 1, config.j2_gearing, 30.0)
-		controller.move_indv_axis(1, 0, config.j3_gearing, 30.0)
-		controller.move_indv_axis(2, 0, config.j5_gearing, 60.0)
+		controller.move_indv_axis(0, 1, config.j2_gearing, -(7.2 * 3.5))
+		controller.move_indv_axis(1, 0, config.j3_gearing, (14.4 * 4.5))
+		controller.move_indv_axis(2, 0, config.j5_gearing, 0)
 		current_pos = calc_current_pos()
 		print(current_pos)
 

@@ -44,3 +44,6 @@ def solve_fk(j1_theta, j2_theta, j3_theta, j4_theta, j5_theta, j6_theta):
 	print(final_pos)
 
 	return final_pos
+
+# test
+# solve_fk(0, 0, 7.2, 0, 0, 0)
