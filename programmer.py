@@ -26,6 +26,8 @@ def safety_checks(targets):
     if lim.work_envelope_check(pos) == False:
         print('Position resulting from orientation is outside the work envelope')
         
+    # need a check to see if joint 5's position is within it's own position envelope
+        
     j1_rot = total_rotations[0]
     j2_rot = total_rotations[1]
     j3_rot = total_rotations[2]
@@ -72,7 +74,7 @@ def safety_checks(targets):
         return total_rotations
     
 
-def program_path(targets, move_type):
+def program_path(targets, move_type, interp_orient):
     angle_list = []
     start_time = time.time()
         
@@ -83,32 +85,45 @@ def program_path(targets, move_type):
         if valid_solve == False:
             break
     
-    if move_type == 'linear':
-        points = lin.create_vector(targets, True)
-    else:
-        points = targets
+    try:  
+        if move_type == 'linear':
+            points = lin.create_vector(targets, interp_orient)
+        else:
+            points = targets
 
-    for i in range(len(points)):
-        _, solved_angles = so.solve_orientation(points[i]['orientation'], points[i]['point'])
-        angle_list.append(solved_angles)
-    
-    time_elapsed = round((time.time() - start_time), 3)
-    
-    generate_file.write_out(angle_list)
-    print(f'solve completed in: {time_elapsed}s')
+        for i in range(len(points)):
+            _, solved_angles = so.solve_orientation(points[i]['orientation'], points[i]['point'])
+            angle_list.append(solved_angles)
+        
+        time_elapsed = round((time.time() - start_time), 3)
+        
+        generate_file.write_out(angle_list)
+        print(f'solve completed in: {time_elapsed}s')
+    except:
+        print('something went wrong with the solve')
 
 # test
 # incoming points are in a dict with 'orientation' and 'point' as keys and xyz array as value pairs
 point_a = {
         "orientation": np.array([0., 0., 0.]),
-        "point": np.array([350., 75., 240.]),
+        "point": np.array([250.014, 50.518, 240.]),
 }
 
 point_b = {
-    "orientation": np.array([0., 90., 0.]),
-    "point": np.array([309.931, -179.238, 240.0]),
+    "orientation": np.array([0., 0., 0.]),
+    "point": np.array([250.014, -49.482, 240.]),
 }
 
-targets = [point_a, point_b]
+point_c = {
+    "orientation": np.array([0., 0., 0.]),
+    "point": np.array([350.014, -49.482, 240.]),
+}
 
-program_path(targets, 'linear')
+point_d = {
+    "orientation": np.array([0., 0., 0.]),
+    "point": np.array([350.014, 50.518, 240.]),
+}
+
+targets = [point_a, point_b, point_c, point_d]
+
+program_path(targets, 'none', False)

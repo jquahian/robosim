@@ -13,6 +13,13 @@ j6 - only z-axis
 position offset: 244.5 add to z-up
 '''
 
+j1_gearing = 50
+j2_gearing = 50
+j3_gearing = 25
+j4_gearing = 25
+j5_gearing = 25
+j6_gearing = 25
+
 # link lengths as vectors
 base_j1 = np.array([0., 0., 131.5])
 j1_j2 = np.array([0., 0., 113.0])
@@ -34,8 +41,8 @@ y_min = 0
 z_min = 45
 
 # joint angle limits
-j1_angle_min_lim = -120
-j1_angle_max_lim = 120
+j1_angle_min_lim = -90
+j1_angle_max_lim = 90
 j2_angle_min_lim = -20
 j2_angle_max_lim = 120
 j3_angle_min_lim = 0
@@ -44,3 +51,5 @@ j4_angle_min_lim = -180
 j4_angle_max_lim = 180
 j5_angle_min_lim = -90
 j5_angle_max_lim = 120
+j6_angle_min_lim = -360
+j6_angle_max_lim = 360
