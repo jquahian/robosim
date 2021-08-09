@@ -40,5 +40,7 @@ def solve_fk(j1_theta, j2_theta, j3_theta, j4_theta, j5_theta, j6_theta):
 								[0., 0., 1.]])
 
 	final_pos = np.matmul(final_pos, correction_matrix)
+	
+	print(final_pos)
 
 	return final_pos
