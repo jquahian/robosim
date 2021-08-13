@@ -1,7 +1,9 @@
 import PySimpleGUI as sg
 import controller
 import robot_config as config
-import fk
+import programmer
+import numpy as np
+
 
 sg.theme('DarkBlack')
 sg.SetOptions(font='Helvetica 12', auto_size_buttons=True)
@@ -19,7 +21,7 @@ indv_axis_col = [
 ]
 
 vert_horz_col = [
-    [sg.Text('Vertical Position (mm)'), sg.Slider(default_value=0, orientation='h', range=(config.z_min, 500.0), resolution=0.1, key='-VERT-SLIDER-', enable_events=True)],
+    [sg.Text('Vertical Position (mm)'), sg.Button('Up', key='-VERT-UP-BTN-')],
 	[sg.Text('Horizontal Positon (mm)')],
 	[sg.Text('Rotational Position(mm)')],
 ]
@@ -27,21 +29,24 @@ vert_horz_col = [
 layout = [
     [sg.Button('Connect'), sg.Button('Calibrate'), sg.Button('Exit')],
     [sg.Column(indv_axis_col), sg.Column(vert_horz_col)],
+    # [sg.Output(key='-CURRENT-POS-READOUT-')],
 ]
 
-def calc_current_pos():
-    current_pos = fk.solve_fk(
-		controller.return_joint_degrees(0, 0, config.j1_gearing),
-		controller.return_joint_degrees(0, 1, config.j2_gearing),
-		controller.return_joint_degrees(1, 0, config.j3_gearing),
-		controller.return_joint_degrees(1, 1, config.j4_gearing),
-		controller.return_joint_degrees(2, 0, config.j5_gearing),
-		controller.return_joint_degrees(2, 1, config.j6_gearing),
-	)
-    
-    # return current_pos
-
 window = sg.Window('Arm Control', layout)
+
+def program_movement(target):
+    '''
+    target is expecting a dictionary with orientation/point as key
+    and values are both an np.array of floats with shape ([0., 0., 0.])
+    for this, we ignore the orientation completely and feed in a linear movement
+    and just the target point
+    '''
+    
+    # pass in target point, linear move type, and no orientation blending
+    angles = programmer.program_path(target, 'linear', interp_orient=False, realtime=True)
+    # print(angles)
+    
+    controller.read_move_instructions(angles)
 
 while True:
 	event, value = window.read()
@@ -51,11 +56,14 @@ while True:
 		controller.set_speed(10.0)
 		controller.set_accel(1.5)
 		controller.set_decel(1.5)
-		controller.move_indv_axis(0, 1, config.j2_gearing, -(7.2 * 3.5))
-		controller.move_indv_axis(1, 0, config.j3_gearing, (14.4 * 4.5))
-		controller.move_indv_axis(2, 0, config.j5_gearing, 0)
-		current_pos = calc_current_pos()
-		print(current_pos)
+
+		# should put us back to point ~(350, 0, 244)
+		# i know that this point is reachable and we can move vertically and horizontally
+		# with the current solve method
+
+		controller.move_indv_axis(0, 1, config.j2_gearing, 31.0)
+		controller.move_indv_axis(1, 0, config.j3_gearing, 120.0)
+		controller.move_indv_axis(2, 0, config.j5_gearing, -61.0)
 
 	if event == 'Calibrate':
 		controller.calibrate_all()
@@ -73,8 +81,37 @@ while True:
 	if event == '-J6-SLIDER-':
 		controller.move_indv_axis(2, 1, config.j6_gearing, value[event])
 
+	if event == '-VERT-UP-BTN-':
+		print('running streaming tests!')
+
+		current_pos = controller.return_current_pos()
+		current_pos = [current_pos[0], current_pos[1], current_pos[2]]
+		print(f'current pos: {current_pos}')
+
+		# moving 10 mm vertically
+		new_pos_z = current_pos[2] + 100.0
+
+		target_pos = [current_pos[0], current_pos[1], new_pos_z]
+		print(f'target pos: {target_pos}')
+
+		point_a = {
+			"orientation": np.array([0., 90., 0.]),
+			"point": np.array(current_pos),
+		}
+
+		point_b = {
+			"orientation": np.array([0., 90., 0.]),
+			"point": np.array(target_pos),
+		}
+
+		target_move = [point_a, point_b]
+
+		program_movement(target_move)
+
 	if event == sg.WIN_CLOSED or event == 'Exit':
 		controller.zero_arm()
 		break
+
+	# window.Element('-CURRENT-POS-READOUT-').Update()
 
 window.close()

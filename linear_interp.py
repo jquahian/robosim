@@ -31,7 +31,7 @@ def create_vector(waypoints, interp_orientation):
 	linear_positions = []
 	
 	# higher values mean more interpolated points
-	step_size_multi = 0.25
+	step_size_multi = 0.05
 
 	orientations, targets, = parse_waypoints(waypoints)
 

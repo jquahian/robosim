@@ -6,6 +6,7 @@ import robot_config as config
 import linear_interp as lin
 import time
 import generate_file
+import controller
 
 '''
 1. unifies path planning to generate raw joint angles
@@ -74,7 +75,7 @@ def safety_checks(targets):
         return total_rotations
     
 
-def program_path(targets, move_type, interp_orient):
+def program_path(targets, move_type, interp_orient, realtime):
     angle_list = []
     start_time = time.time()
         
@@ -96,34 +97,56 @@ def program_path(targets, move_type, interp_orient):
             angle_list.append(solved_angles)
         
         time_elapsed = round((time.time() - start_time), 3)
-        
-        generate_file.write_out(angle_list)
+
         print(f'solve completed in: {time_elapsed}s')
+
+        if realtime == False:
+            print('offline programming enabled: generating solve file')
+            generate_file.write_out(angle_list)
+        else:
+            print('realtime programming enabled: streaming solve')
+            return angle_list    
     except:
         print('something went wrong with the solve')
 
 # test
 # incoming points are in a dict with 'orientation' and 'point' as keys and xyz array as value pairs
 point_a = {
-        "orientation": np.array([0., 0., 0.]),
-        "point": np.array([250.014, 50.518, 240.]),
+        "orientation": np.array([90., 0., 0.]),
+        "point": np.array([277.1173366807718, -215.72995774121685, 243.45753120996508]),
 }
 
 point_b = {
-    "orientation": np.array([0., 0., 0.]),
-    "point": np.array([250.014, -49.482, 240.]),
+    "orientation": np.array([90., 0., 0.]),
+    "point": np.array([277.1173366807718, -215.72995774121685, 343.45753120996505]),
 }
 
-point_c = {
-    "orientation": np.array([0., 0., 0.]),
-    "point": np.array([350.014, -49.482, 240.]),
-}
+# point_c = {
+#     "orientation": np.array([0., 0., 0.]),
+#     "point": np.array([350.014, -49.482, 240.]),
+# }
 
-point_d = {
-    "orientation": np.array([0., 0., 0.]),
-    "point": np.array([350.014, 50.518, 240.]),
-}
+# point_d = {
+#     "orientation": np.array([0., 90., 0.]),
+#     "point": np.array([350.014, 50.518, 240.]),
+# }
 
-targets = [point_a, point_b, point_c, point_d]
+targets = [point_a, point_b]
 
-program_path(targets, 'none', False)
+
+'''
+arguments:
+
+1) targets as an array of points (see above example)
+2) move type:
+    a) if 'none', robot will just move from point to point in the most direct way possible
+    b) if 'linear', robot will generate intermediate points that are on a linear trajectory between point and point + 1.
+3) blend orientation (TRUE/FALSE):
+    a) True: will blend the requested orientation from point to point + 1
+    b) if false: will take the orientation of the first point and apply it to the entire range of motion
+4) realtime (TRUE/FALSE):
+    determines whether to save the generated points as a file for later playback or to stream the data directly to the arm
+'''
+
+# uncomment for testing
+program_path(targets, 'linear', interp_orient=False, realtime=False)

@@ -64,7 +64,7 @@ def solve_orientation(orientation_rot, target_point):
 
 			co_linear_x = round(check_target[0]/target_point[0], 2)
 			co_linear_y = round(check_target[1]/target_point[1], 2)
-			co_linear_z = round(check_target[1]/target_point[1], 2)
+			co_linear_z = round(check_target[2]/target_point[2], 2)
 
 			# can't guarantee that there will be a solution that gets us exactly 1.0
 			# 0.98 is more than enough for this

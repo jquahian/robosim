@@ -1,7 +1,9 @@
 import time
 import odrive
+import fk
 import robot_config as config
 from odrive.enums import *
+
 
 # identify boards
 odrv0 = '207D37A53548'
@@ -63,7 +65,27 @@ def move_indv_axis(drive_num, axis_num, gear_ratio, degrees):
 			gear_ratio, degrees)
 	else:
 		print('Fn move_indv_axis ERROR: axis does not exist!')
+	
+	return_current_pos()
 
+def read_move_instructions(angles):
+	print(len(angles))
+	for i in range(len(angles)):
+		move_indv_axis(0, 0, config.j1_gearing, angles[i][0])
+		move_indv_axis(0, 1, config.j2_gearing, angles[i][1])
+		move_indv_axis(1, 0, config.j3_gearing, angles[i][2])
+		move_indv_axis(1, 1, config.j4_gearing, angles[i][3])
+		move_indv_axis(2, 0, config.j5_gearing, angles[i][4])
+		move_indv_axis(2, 1, config.j6_gearing, angles[i][5])
+
+		# print(angles[i][0])
+		# print(angles[i][1])
+		# print(angles[i][2])
+		# print(angles[i][3])
+		# print(angles[i][4])
+		# print(angles[i][5])
+
+		time.sleep(0.1)
 def set_speed(new_speed):
 	global oboard
 
@@ -98,12 +120,26 @@ def zero_arm():
 	oboard[1].axis1.controller.input_pos = return_num_turns(25, 0)
 	oboard[2].axis0.controller.input_pos = return_num_turns(25, 0)
 	oboard[2].axis1.controller.input_pos = return_num_turns(25, 0)
+	
+	return_current_pos()
+
+def return_current_pos():
+	current_pos = fk.solve_fk(
+		return_joint_degrees(0, 0, config.j1_gearing),
+		return_joint_degrees(0, 1, config.j2_gearing),
+		return_joint_degrees(1, 0, config.j3_gearing),
+		return_joint_degrees(1, 1, config.j4_gearing),
+		return_joint_degrees(2, 0, config.j5_gearing),
+		return_joint_degrees(2, 1, config.j6_gearing),
+	)
+
+	print(f'Current Position (xyz, mm): {current_pos}')
+
+	return current_pos
 
 def return_num_turns(axis_gear_ratio, input_degrees):
 	# calculates the number of motor turns to get to degrees based on gear ratio
 	turns = input_degrees / (360 / axis_gear_ratio)
-	
-	print(turns)
 
 	return turns
 
@@ -129,19 +165,3 @@ def return_joint_velocity(drive_num, axis_num):
 	
 	return joint_vel_est
 
-# returns a joint number for human feedback
-def return_joint_number(drive_num, axis_num):
-	if drive_num == 0 and axis_num == 0:
-		joint_num = 1
-	elif drive_num == 0 and axis_num == 1:
-		joint_num = 2
-	elif drive_num == 1 and axis_num == 0:
-		joint_num = 3
-	elif drive_num == 1 and axis_num == 1:
-		joint_num = 4
-	elif drive_num == 2 and axis_num == 0:
-		joint_num = 5
-	elif drive_num == 2 and axis_num == 1:
-		joint_num = 6
-
-	return joint_num
