@@ -30,6 +30,8 @@ def solve_fk(j1_theta, j2_theta, j3_theta, j4_theta, j5_theta, j6_theta):
 	total_pos = np.add(j5_j6_vec, j2_j3_vec)
 	total_pos = np.add(total_pos, j3_j5_vec)
 
+	print('test')
+
 	# find final postion by rotating about j1
 	final_pos = np.matmul(total_pos, rot.z_rot_mat(math.radians(j1_theta)))
 	final_pos = np.add(final_pos, config.position_offset)
