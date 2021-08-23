@@ -13,6 +13,7 @@ def generate_linear_path(waypoints, intermediate_point_dist):
     Returns:
         array of arrays: each item in the array is a cartesian point in the form [x, y, z] (mm)
     """
+    
     start_time = time.time()
     linear_coordinates = []
 
@@ -27,12 +28,10 @@ def generate_linear_path(waypoints, intermediate_point_dist):
 
             segment_length = np.linalg.norm(vector_p1_p2)
 
-            print(f'segment is {segment_length} mm')
+            print(f'segment is {segment_length} mm \n')
 
             # determine number of intermediate points spaced some distance between the waypoints
             num_points = int(segment_length // intermediate_point_dist)
-
-            print(f'generating {num_points} points for this segment')
 
             # generate the intermediate points
             for j in range(num_points):
@@ -41,16 +40,15 @@ def generate_linear_path(waypoints, intermediate_point_dist):
 
                 linear_coordinates.append(linear_point)
 
-    elapsed_time = round(start_time - time.time(), 5)
+    elapsed_time = round(start_time - time.time(), 7)
 
     linear_coordinates.append(np.array(waypoints[-1]))
 
-    print(f'{len(linear_coordinates)} points solved in {elapsed_time} s')
+    print(f'linear solve: {len(linear_coordinates)} points generated between {len(waypoints)} waypoints in {elapsed_time} s')
 
     return linear_coordinates
 
-
-## example useage and for testing
+# # example useage and for testing
 # point_a = [393.67, -227.585, 428.274]
 # point_b = [480., 40., 400.]
 # point_c = [393.67, 0, 428.274]
