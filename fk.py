@@ -1,49 +1,51 @@
-import math
 import numpy as np
-import rotation_matrices as rot
+import rotation_matrices as rot_mat
+import math
 import robot_config as config
 
-'''
-given angles for j1 - j5, determines where the arm is in space given as x/y/z
-
-1. treat each joint as a distinct vector
-2. apply rotations individually
-3. add all vectors
-'''
 
 def solve_fk(j1_theta, j2_theta, j3_theta, j4_theta, j5_theta, j6_theta):
+    """[returns the position of joint 6 based on the given angles of joints 1 - 5]
 
-	# calculate position by finding the location by joints 2 + 3
-	j2_j3_vec = np.matmul(config.j2_j3, rot.y_rot_mat(math.radians(j2_theta)))
-	j3_j5_vec = np.matmul(
-		config.j3_j4 + config.j4_j5, rot.y_rot_mat(math.radians(j2_theta + j3_theta)))
+    Args:
+        angles (j1, j2, j3, j4, j5, j6 angles): [angles of joints 1 - 6, as floats in degrees]
 
-	# calculate orientation of the sphereical wrist
-	j5_rot_vec_y = np.matmul(config.basis_vectors, rot.y_rot_mat(math.radians(j5_theta)))
-	j4_rot_vec_z = np.matmul(j5_rot_vec_y, rot.z_rot_mat(math.radians(j4_theta)))
+    Returns:
+        [x-coord, y-coord, z-coord]: [cartesian coordinates of joint 6 as floats in mm]
+    """
+    # solve from j5 down
 
-	# apply the rotation of the arm to the wrist
-	wrist_arm_rot_vec_y = np.matmul(
-		j4_rot_vec_z, rot.y_rot_mat(math.radians(j2_theta + j3_theta)))
-	j5_j6_vec = np.matmul(config.j5_j6, wrist_arm_rot_vec_y)
+    # rotation of j5 about j5 on global y
+    pos = np.matmul(config.j5_j6, rot_mat.y_rot_mat(math.radians(j5_theta)))
 
-	total_pos = np.add(j5_j6_vec, j2_j3_vec)
-	total_pos = np.add(total_pos, j3_j5_vec)
+    # rotation of j5 about j4 on global z
+    pos = np.matmul(pos, rot_mat.z_rot_mat(math.radians(j4_theta)))
 
-	# find final postion by rotating about j1
-	final_pos = np.matmul(total_pos, rot.z_rot_mat(math.radians(j1_theta)))
-	final_pos = np.add(final_pos, config.position_offset)
+    # apply j5 offset -- length of j4 to j5
+    pos = np.add(pos, config.j4_j5)
 
-	# flip the x coord to positive to match the orientation of the robot
-	correction_matrix = np.array([[-1., 0., 0.],
-								[0., 1., 0.],
-								[0., 0., 1.]])
+    # apply length of j3 to j4 and rotate about j3
+    pos = np.add(pos, config.j3_j4)
 
-	final_pos = np.matmul(final_pos, correction_matrix)
-	
-	# print(final_pos)
+    pos = np.matmul(pos, rot_mat.y_rot_mat(math.radians(j3_theta)))
 
-	return final_pos
+    # apply length of j2 to j3 and rotate about j2
+    pos = np.add(pos, config.j2_j3)
 
-# test
-# solve_fk(0, 0, 7.2, 0, 0, 0)
+    pos = np.matmul(pos, rot_mat.y_rot_mat(math.radians(j2_theta)))
+
+    # apply length of base to j2 and rotate about j1
+    pos = np.add(pos, config.position_offset)
+
+    pos = np.matmul(pos, rot_mat.z_rot_mat(math.radians(j1_theta)))
+
+    # correct for sign on x-coord based on robot orientation
+    pos[0] = -pos[0]
+
+    print(f'position: {pos} with j6 rotated {j6_theta} degrees')
+    
+    return pos
+
+## test
+## correct answer: [386.67815519 238.82363824 430.02169076]
+#solve_fk(30, 33.5, 45, 15, 20, 0)

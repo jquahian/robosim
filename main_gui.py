@@ -9,7 +9,7 @@ sg.theme('DarkBlack')
 sg.SetOptions(font='Helvetica 12', auto_size_buttons=True)
 		
 window_width = 1024
-window_height = 600
+window_height = 800
 
 indv_axis_col = [
 	[sg.Text('J1'), sg.Slider(default_value=0, orientation='h', range=(config.j1_angle_min_lim, config.j1_angle_max_lim), resolution=0.1, key='-J1-SLIDER-', enable_events=True)],
@@ -22,14 +22,17 @@ indv_axis_col = [
 
 vert_horz_col = [
     [sg.Text('Vertical Position (mm)'), sg.Button('Up', key='-VERT-UP-BTN-')],
-	[sg.Text('Horizontal Positon (mm)')],
-	[sg.Text('Rotational Position(mm)')],
+	[sg.Text('Horizontal Positon (mm)'), sg.Button('Forward', key='-VERT-FWD-BTN-')],
+	[sg.Text('Rotational Position(mm)'), sg.Button('Rotate', key='-VERT-ROT-BTN-')],
+]
+
+output_col = [
+    [sg.Output(key='-CURRENT-POS-READOUT-', size=(50, 25))],
 ]
 
 layout = [
-    [sg.Button('Connect'), sg.Button('Calibrate'), sg.Button('Exit')],
-    [sg.Column(indv_axis_col), sg.Column(vert_horz_col)],
-    # [sg.Output(key='-CURRENT-POS-READOUT-')],
+    [sg.Button('Connect'), sg.Button('Home'), sg.Button('Zero'), sg.Button('Exit')],
+    [sg.Column(indv_axis_col), sg.Column(vert_horz_col), sg.Column(output_col)],
 ]
 
 window = sg.Window('Arm Control', layout)
@@ -47,6 +50,16 @@ def program_movement(target):
     # print(angles)
     
     controller.read_move_instructions(angles)
+    
+def move_home():
+	"""
+	should put us back to point ~(350, 0, 244) 
+	i know that this point is reachable and we can move vertically and horizontally with the current solve method
+	"""
+
+	controller.move_indv_axis(0, 1, config.j2_gearing, 31.0)
+	controller.move_indv_axis(1, 0, config.j3_gearing, 120.0)
+	controller.move_indv_axis(2, 0, config.j5_gearing, -61.0)
 
 while True:
 	event, value = window.read()
@@ -57,16 +70,10 @@ while True:
 		controller.set_accel(1.5)
 		controller.set_decel(1.5)
 
-		# should put us back to point ~(350, 0, 244)
-		# i know that this point is reachable and we can move vertically and horizontally
-		# with the current solve method
+		move_home()
 
-		controller.move_indv_axis(0, 1, config.j2_gearing, 31.0)
-		controller.move_indv_axis(1, 0, config.j3_gearing, 120.0)
-		controller.move_indv_axis(2, 0, config.j5_gearing, -61.0)
-
-	if event == 'Calibrate':
-		controller.calibrate_all()
+	if event == 'Home':
+		move_home()
 
 	if event == '-J1-SLIDER-':
 		controller.move_indv_axis(0, 0, config.j1_gearing, value[event])
@@ -112,6 +119,9 @@ while True:
 		controller.zero_arm()
 		break
 
-	# window.Element('-CURRENT-POS-READOUT-').Update()
+	if event == 'Zero':
+		controller.zero_arm()
+
+	window.Element('-CURRENT-POS-READOUT-').Update()
 
 window.close()

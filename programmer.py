@@ -148,5 +148,5 @@ arguments:
     determines whether to save the generated points as a file for later playback or to stream the data directly to the arm
 '''
 
-# uncomment for testing
-program_path(targets, 'linear', interp_orient=False, realtime=False)
+# # uncomment for testing
+# program_path(targets, 'linear', interp_orient=False, realtime=False)
