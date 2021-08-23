@@ -1,92 +1,60 @@
 import numpy as np
-import robot_config as config
+import time
 
-'''
-calcuations for movement on a linear course from waypoint A to waypoint B
-we set a predetermined number of steps to take between the two waypoints
-step size: can increase or decrease this depending on resolution needed
-'''
 
-j5_j6_length = config.j5_j6
+def generate_linear_path(waypoints, intermediate_point_dist):
+    """function takes a list of waypoints and generates a list of points to form a linear path between them.
+    The order of the waypoints matters.  intermediate points will be generated between waypoint n and n+1.
+    Function will take any number of waypoints.
+    
+    Args:
+        waypoints (array): array of cartesian points where each point is given as an array [x, y, z] (mm)
+        intermediate_point_dist (float): distance to space the intermediate points between waypoints (mm)
+    Returns:
+        array of arrays: each item in the array is a cartesian point in the form [x, y, z] (mm)
+    """
+    start_time = time.time()
+    linear_coordinates = []
 
-def parse_waypoints(waypoints):
-	targets = []
-	orientations = []
+    for i in range(len(waypoints)):
+        if i < len(waypoints) - 1:
 
-	for point in waypoints:
-		targets.append(point["point"])
+            point_1 = np.array(waypoints[i])
+            point_2 = np.array(waypoints[i + 1])
+            vector_p1_p2 = np.subtract(point_2, point_1)
 
-	for orientation in waypoints:
-		orientations.append(orientation["orientation"])
+            print(f'vector: {vector_p1_p2}')
 
-	return orientations, targets
+            segment_length = np.linalg.norm(vector_p1_p2)
 
-'''
-interpolate between the waypoints
-create a set of equally spaced, descrete points from interpolation
-pass an array of any size
-'''
+            print(f'segment is {segment_length} mm')
 
-def create_vector(waypoints, interp_orientation):
-	linear_positions = []
-	
-	# higher values mean more interpolated points
-	step_size_multi = 0.05
+            # determine number of intermediate points spaced some distance between the waypoints
+            num_points = int(segment_length // intermediate_point_dist)
 
-	orientations, targets, = parse_waypoints(waypoints)
+            print(f'generating {num_points} points for this segment')
 
-	if interp_orientation == True:
-		interpolated_points = interp(targets, step_size_multi)
-		interpolated_orientations = interp(orientations, step_size_multi)
+            # generate the intermediate points
+            for j in range(num_points):
+                linear_point = np.multiply(vector_p1_p2, j/num_points)
+                linear_point = np.add(linear_point, point_1)
 
-		normalize_point_spread = len(interpolated_points) / len(interpolated_orientations)	
+                linear_coordinates.append(linear_point)
 
-		interpolated_orientations = interp(orientations, step_size_multi * normalize_point_spread)
+    elapsed_time = round(start_time - time.time(), 5)
 
-		if len(interpolated_points) != len(interpolated_orientations):
-			interpolated_orientations.pop(-1)
+    linear_coordinates.append(np.array(waypoints[-1]))
 
-		for i in range(len(interpolated_points)):
-			new_point = dict({"orientation": interpolated_orientations[i],
-							"point": interpolated_points[i]
-					})
+    print(f'{len(linear_coordinates)} points solved in {elapsed_time} s')
 
-			linear_positions.append(new_point)
-	else:
-		interpolated_points = interp(targets, step_size_multi)
-		orientation = orientations[0]
+    return linear_coordinates
 
-		for i in range(len(interpolated_points)):
-			new_point = dict({"orientation":orientation,
-							"point": interpolated_points[i]
-						})
-			linear_positions.append(new_point)
-			
-	print(len(linear_positions))
-	return linear_positions
 
-def interp(targets, step_size_multi):
-	interp_point_list = []
+## example useage and for testing
+# point_a = [393.67, -227.585, 428.274]
+# point_b = [480., 40., 400.]
+# point_c = [393.67, 0, 428.274]
 
-	# generate our interpolated targets
-	for i in range(len(targets)):
-		if i == len(targets) - 1:
-			print('last waypoint reached')
-		else:
-			vector = np.subtract(targets[i + 1], targets[i])
-			vector_length = np.sqrt(np.sum(np.square(vector)))
-			unit_vector = vector / vector_length
+# waypoints = [point_a, point_b, point_c]
 
-			# starting at the inital point, get a series of points between two way points
-			# at 1 mm increments which can be modifed by step_size_multi
-			step_size = int(vector_length * step_size_multi)
-
-			for j in range(1, int(vector_length * step_size_multi)):
-				# get a series of (more or less) equally spaced points
-				interp_point = np.add(targets[i], np.multiply(
-					j/step_size_multi, unit_vector))
-
-				# generate a list of these points
-				interp_point_list.append(interp_point)
-
-	return interp_point_list
+# generate_linear_path(waypoints, 10)

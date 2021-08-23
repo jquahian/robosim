@@ -5,13 +5,13 @@ import robot_config as config
 
 
 def solve_fk(j1_theta, j2_theta, j3_theta, j4_theta, j5_theta, j6_theta):
-    """[returns the position of joint 6 based on the given angles of joints 1 - 5]
+    """returns the position of joint 6 based on the given angles of joints 1 - 5
 
     Args:
-        angles (j1, j2, j3, j4, j5, j6 angles): [angles of joints 1 - 6, as floats in degrees]
+        float: angles of joints 1 - 6, as floats in degrees
 
     Returns:
-        [x-coord, y-coord, z-coord]: [cartesian coordinates of joint 6 as floats in mm]
+        array: cartesian coordinates of joint 6 in the form [x, y, z] mm
     """
     # solve from j5 down
 
@@ -46,6 +46,6 @@ def solve_fk(j1_theta, j2_theta, j3_theta, j4_theta, j5_theta, j6_theta):
     
     return pos
 
-## test
+## example usage and test
 ## correct answer: [386.67815519 238.82363824 430.02169076]
 #solve_fk(30, 33.5, 45, 15, 20, 0)
